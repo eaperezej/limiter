@@ -1,11 +1,11 @@
 package limiter
 
 import (
-	"net/http/httptest"
-	"net/http"
-	"log"
-	"io/ioutil"
 	"io"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"net/http/httptest"
 	"sync"
 	"testing"
 	"time"
@@ -13,10 +13,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var ( 
-	mtx = &sync.Mutex{}
-	successSlice = make([]int, 0)
-	failedSlice = make([]int, 0)
+var (
+	mtx                = &sync.Mutex{}
+	successSlice       = make([]int, 0)
+	failedSlice        = make([]int, 0)
 	healthCheckHandler = func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -28,10 +28,10 @@ func apicall(wg *sync.WaitGroup, url string) {
 	defer wg.Done()
 
 	resp, err := http.Get(url)
-	
+
 	if err != nil {
 		panic(err)
-	}		
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -39,7 +39,7 @@ func apicall(wg *sync.WaitGroup, url string) {
 	}
 
 	bdy := string(body)
-	
+
 	if bdy == "{\"alive\": true}" {
 		mtx.Lock()
 		successSlice = append(successSlice, 1)
@@ -62,7 +62,7 @@ func Test_serverHandleFunc(t *testing.T) {
 	if err != nil {
 		t.Errorf("Server: Expected nil, received %s", err.Error())
 	}
-	
+
 	if res.StatusCode != http.StatusOK {
 		t.Errorf("Server response: Expected %d, received %d", http.StatusOK, res.StatusCode)
 	}
@@ -84,7 +84,7 @@ func Test_multipleApiCalls(t *testing.T) {
 
 	for i := 1; i <= 15; i++ {
 		wg.Add(1)
-		go apicall(&wg, ts.URL + "/")
+		go apicall(&wg, ts.URL+"/")
 	}
 
 	wg.Wait()
@@ -114,9 +114,9 @@ func Test_multipleApiCallsRedisRefreshTTL(t *testing.T) {
 
 	for i := 1; i <= 11; i++ {
 		wg.Add(1)
-		go apicall(&wg, ts.URL + "/")
+		go apicall(&wg, ts.URL+"/")
 
-		if(i == 10) {
+		if i == 10 {
 			time.Sleep(time.Second * 1)
 		}
 	}

@@ -2,10 +2,11 @@ package limiter
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
+
 	"github.com/go-redis/redis/v8"
 	"github.com/go-redis/redis_rate/v9"
-	"net/http"
-	"encoding/json"
 )
 
 const (
@@ -31,11 +32,11 @@ var LimiterMiddleware = func(next http.Handler) http.Handler {
 		rdb := redis.NewClient(&redis.Options{
 			Addr: REDIS_SERVER,
 		})
-		
+
 		limiter := redis_rate.NewLimiter(rdb)
 		// NOTE: For testing purposes only
 		res, err := limiter.Allow(ctx, "healthcheck:testing_key", redis_rate.PerSecond(10))
-		
+
 		if err != nil {
 			panic(err)
 		}
