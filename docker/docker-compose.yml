@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  limiter_app:
+    container_name: limiter_app
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    tty: true
+    volumes:
+      - ../:/app/current
+
+  limiter_cache:
+    container_name: limiter_cache
+    image: redis:latest
+    ports:
+      - "6379:6379"

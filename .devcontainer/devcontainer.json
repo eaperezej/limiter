@@ -1,0 +1,10 @@
+{
+    "name": "app",
+    "dockerComposeFile": ["../docker/docker-compose.yml"],
+    "service": "limiter_app",
+    "shutdownAction": "none",
+	"workspaceFolder": "/app/current",
+	"extensions": [
+		"golang.go"
+	]
+}
