@@ -8,6 +8,7 @@ import (
 	"io"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -38,7 +39,6 @@ func apicall(wg *sync.WaitGroup, url string) {
 	}
 
 	bdy := string(body)
-	log.Println(bdy)
 	
 	if bdy == "{\"alive\": true}" {
 		mtx.Lock()
@@ -71,6 +71,11 @@ func Test_serverHandleFunc(t *testing.T) {
 func Test_multipleApiCalls(t *testing.T) {
 	var wg sync.WaitGroup
 
+	// Refresh vars and redis key ttl
+	successSlice = make([]int, 0)
+	failedSlice = make([]int, 0)
+	time.Sleep(time.Second * 1)
+
 	r := mux.NewRouter()
 	r.HandleFunc("/", healthCheckHandler)
 	r.Use(LimiterMiddleware)
@@ -90,5 +95,39 @@ func Test_multipleApiCalls(t *testing.T) {
 
 	if len(failedSlice) != 5 {
 		t.Errorf("Failed Slice: Expected %d, received %d", 10, len(failedSlice))
+	}
+}
+
+func Test_multipleApiCallsRedisRefreshTTL(t *testing.T) {
+	var wg sync.WaitGroup
+
+	// Refresh vars and redis key ttl
+	successSlice = make([]int, 0)
+	failedSlice = make([]int, 0)
+	time.Sleep(time.Second * 1)
+
+	r := mux.NewRouter()
+	r.HandleFunc("/", healthCheckHandler)
+	r.Use(LimiterMiddleware)
+	ts := httptest.NewServer(r)
+	defer ts.Close()
+
+	for i := 1; i <= 11; i++ {
+		wg.Add(1)
+		go apicall(&wg, ts.URL + "/")
+
+		if(i == 10) {
+			time.Sleep(time.Second * 1)
+		}
+	}
+
+	wg.Wait()
+
+	if len(successSlice) != 11 {
+		t.Errorf("Success Slice: Expected %d, received %d", 11, len(successSlice))
+	}
+
+	if len(failedSlice) != 0 {
+		t.Errorf("Failed Slice: Expected %d, received %d", 0, len(failedSlice))
 	}
 }
