@@ -1,1 +1,1 @@
-Simple rate-limiting middleware using go-redis/redis-rate
+Simple rate-limiting middleware example using go-redis/redis-rate
